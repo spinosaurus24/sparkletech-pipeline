@@ -125,7 +125,12 @@ def collect_meteo():
         df["date"] = pd.to_datetime(df["date"])
         df["geo"] = df["ville"].map(MAPPING_PAYS)
 
-        logger.info(f"Météo collectée : {len(df)} lignes, {df['ville'].nunique()} villes")
+        # Ne garder que les dates où les 28 villes sont présentes
+        compte_par_date = df.groupby("date")["ville"].nunique()
+        dates_completes = compte_par_date[compte_par_date == len(VILLES)].index
+        df = df[df["date"].isin(dates_completes)]
+
+        logger.info(f"Météo filtrée : {len(df)} lignes, {df['ville'].nunique()} villes, {df['date'].nunique()} dates")
         return df
 
     except Exception as e:
@@ -246,7 +251,8 @@ def charger_avec_deduplication(df, table_name, cle_metier):
     job.result()
 
     logger.info(f"{table_name} : {len(df_total)} lignes écrites (dédupliquées)")
-    
+
+
 # MAIN
 def main():
     logger.info("=" * 60)
