@@ -1,4 +1,4 @@
-name: Pipeline quotidien GlowParis
+name: Pipeline quotidien SparkleTech
 
 on:
   schedule:
