@@ -1,0 +1,33 @@
+name: Pipeline quotidien GlowParis
+
+on:
+  schedule:
+    # Tous les jours à 6h UTC (7h ou 8h en France selon la saison)
+    - cron: "0 6 * * *"
+  workflow_dispatch:  # Permet de lancer manuellement depuis GitHub
+
+jobs:
+  collecte:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer les dépendances
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Authentifier Google Cloud
+        run: |
+          echo '${{ secrets.GCP_CREDENTIALS }}' > /tmp/gcp_credentials.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp_credentials.json" >> $GITHUB_ENV
+
+      - name: Lancer le pipeline
+        run: python pipeline.py
